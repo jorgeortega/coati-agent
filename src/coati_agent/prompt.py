@@ -12,7 +12,10 @@ import hashlib
 import json
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+# In a checkout, data/ sits at the repo root; in a built wheel (a Databricks
+# job, a served model), it ships inside the package.
+_PACKAGE_DATA = Path(__file__).resolve().parent / "data"
+DATA_DIR = _PACKAGE_DATA if _PACKAGE_DATA.exists() else Path(__file__).resolve().parents[2] / "data"
 
 # Appended after the site summary: the coati's rules say its knowledge is the
 # summary "and nothing else"; this agent also has its tools.

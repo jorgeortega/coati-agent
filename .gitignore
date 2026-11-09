@@ -7,3 +7,5 @@ __pycache__/
 mlruns/
 .env
 mlflow.db
+build/
+dist/

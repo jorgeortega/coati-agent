@@ -11,6 +11,53 @@ variables:
   embedding_model:
     description: Embedding endpoint for the docs index (spec D1).
     default: databricks-gte-large-en
+  catalog:
+    description: Unity Catalog catalog for the agent's schema.
+    default: workspace
+
+artifacts:
+  wheel:
+    type: whl
+    build: uv build --wheel
+    path: .
+
+resources:
+  schemas:
+    coati_agent:
+      catalog_name: ${var.catalog}
+      name: coati_agent
+      comment: The coati agent's artifacts (docs index, later its model).
+
+  volumes:
+    artifacts:
+      catalog_name: ${var.catalog}
+      schema_name: ${resources.schemas.coati_agent.name}
+      name: artifacts
+      volume_type: MANAGED
+      comment: Built docs indexes, one folder per build.
+
+  jobs:
+    embed_docs:
+      name: coati-agent embed_docs
+      description: Chunks the exported docs and embeds them into an index in the artifacts volume (spec D1).
+      max_concurrent_runs: 1
+      tasks:
+        - task_key: embed
+          environment_key: default
+          python_wheel_task:
+            package_name: coati_agent
+            entry_point: coati-index
+            parameters:
+              - --out
+              - /Volumes/${var.catalog}/${resources.schemas.coati_agent.name}/${resources.volumes.artifacts.name}/index
+              - --endpoint
+              - ${var.embedding_model}
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ./dist/*.whl
 
 targets:
   dev:

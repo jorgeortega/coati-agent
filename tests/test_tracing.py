@@ -69,3 +69,27 @@ def test_a_turn_records_agent_chat_and_tool_spans():
     tool_span = trace.data.spans[2]
     assert tool_span.name == "search_docs"
     assert tool_span.outputs == {"content": "Enterprise has SSO."}
+
+
+def test_search_docs_records_a_retriever_span_with_documents():
+    import numpy as np
+
+    from coati_agent.index import build_index, search_docs_tool
+
+    class Embedder:
+        def embed(self, texts):
+            return np.array([[1.0, float("sso" in t.lower())] for t in texts])
+
+    rows = [
+        {"path": "e.md", "url": "u/e", "title": "Enterprise", "text": "## SSO\n\nSSO here."},
+        {"path": "p.md", "url": "u/p", "title": "Pricing", "text": "## Prices\n\nPro costs."},
+    ]
+    embedder = Embedder()
+    tool = search_docs_tool(build_index(rows, embedder), embedder, k=1)
+
+    tool(query="sso")
+
+    trace = mlflow.get_trace(mlflow.get_last_active_trace_id())
+    span = next(s for s in trace.data.spans if s.span_type == SpanType.RETRIEVER)
+    assert span.outputs[0]["page_content"] == "SSO here."
+    assert span.outputs[0]["metadata"]["doc_uri"] == "u/e"
