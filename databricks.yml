@@ -1,0 +1,25 @@
+# Databricks Asset Bundle for the coati agent.
+# dev:  Free Edition, for building and evals (non-commercial use only).
+# prod: a pay-as-you-go workspace, for the public Agent Lab page (spec D0b).
+bundle:
+  name: coati-agent
+
+variables:
+  model:
+    description: Foundation Model API endpoint the agent calls (spec D2).
+    default: databricks-qwen3-next-80b-a3b-instruct
+  embedding_model:
+    description: Embedding endpoint for the docs index (spec D1).
+    default: databricks-gte-large-en
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      profile: coati-free
+
+  prod:
+    mode: production
+    workspace:
+      profile: coati-paid
