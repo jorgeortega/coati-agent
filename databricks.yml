@@ -7,13 +7,19 @@ bundle:
 variables:
   model:
     description: Foundation Model API endpoint the agent calls (spec D2).
-    default: databricks-qwen3-next-80b-a3b-instruct
+    default: databricks-gpt-oss-120b
   embedding_model:
     description: Embedding endpoint for the docs index (spec D1).
     default: databricks-gte-large-en
   catalog:
     description: Unity Catalog catalog for the agent's schema.
     default: workspace
+  model_version:
+    description: The registered coati_agent version to serve (scripts/log_model.py prints it).
+    default: "2"
+  experiment_id:
+    description: MLflow experiment the endpoint's traces go to (/Users/<you>/coati-agent).
+    default: "795534058228195"
 
 artifacts:
   wheel:
@@ -58,6 +64,21 @@ resources:
             environment_version: "4"
             dependencies:
               - ./dist/*.whl
+
+  model_serving_endpoints:
+    agent_endpoint:
+      name: coati-agent
+      description: The Latitude 10 support agent (spec 2026-11-09). CPU, scales to zero.
+      config:
+        served_entities:
+          - name: coati-agent
+            entity_name: ${var.catalog}.${resources.schemas.coati_agent.name}.coati_agent
+            entity_version: ${var.model_version}
+            workload_size: Small
+            scale_to_zero_enabled: true
+            environment_vars:
+              ENABLE_MLFLOW_TRACING: "true"
+              MLFLOW_EXPERIMENT_ID: ${var.experiment_id}
 
 targets:
   dev:

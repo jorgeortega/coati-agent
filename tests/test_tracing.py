@@ -93,3 +93,16 @@ def test_search_docs_records_a_retriever_span_with_documents():
     span = next(s for s in trace.data.spans if s.span_type == SpanType.RETRIEVER)
     assert span.outputs[0]["page_content"] == "SSO here."
     assert span.outputs[0]["metadata"]["doc_uri"] == "u/e"
+
+
+def test_adapter_reads_text_from_content_blocks_and_skips_reasoning():
+    blocks = [
+        {"type": "reasoning", "summary": [{"type": "summary_text", "text": "thinking..."}]},
+        {"type": "text", "text": "Enterprise "},
+        {"type": "text", "text": "has SSO."},
+    ]
+    model = OpenAICompatibleModel(FakeClient(completion(content=blocks)), endpoint="e")
+
+    reply = model.chat("rules", [{"role": "user", "content": "hi"}], tools=[])
+
+    assert reply.text == "Enterprise has SSO."

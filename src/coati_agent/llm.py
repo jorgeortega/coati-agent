@@ -80,7 +80,20 @@ class OpenAICompatibleModel:
         ]
         usage = response.usage
         return Reply(
-            text=message.content or "",
+            text=_text(message.content),
             tool_calls=calls,
             usage=Usage(usage.prompt_tokens, usage.completion_tokens) if usage else Usage(),
         )
+
+
+def _text(content: Any) -> str:
+    """The answer's text: a plain string, or the text blocks of a list (no reasoning)."""
+    if isinstance(content, str):
+        return content
+    parts = []
+    for block in content or []:
+        kind = block.get("type") if isinstance(block, dict) else getattr(block, "type", None)
+        text = block.get("text") if isinstance(block, dict) else getattr(block, "text", None)
+        if kind in ("text", "output_text") and isinstance(text, str):
+            parts.append(text)
+    return "".join(parts)

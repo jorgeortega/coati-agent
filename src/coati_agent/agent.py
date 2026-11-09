@@ -7,6 +7,8 @@ model calls and tool calls in order, with their timings and tokens.
 from __future__ import annotations
 
 import json
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -32,6 +34,9 @@ class Turn:
     pending: ToolCall | None = None
     citations: list[Citation] = field(default_factory=list)
     usage: Usage = field(default_factory=Usage)
+    # A short, safe record of each step for the Agent Lab page: no prompts,
+    # no tool payloads (the full trace goes to MLflow).
+    steps: list[dict[str, Any]] = field(default_factory=list)
 
 
 class Agent:
@@ -42,7 +47,9 @@ class Agent:
         tool_specs: list[dict[str, Any]],
         tools: dict[str, ServerTool],
         client_tools: frozenset[str] = CLIENT_TOOLS,
+        clock: Callable[[], float] = time.perf_counter,
     ):
+        self.clock = clock
         self.model = model
         self.system = system
         self.tool_specs = tool_specs
@@ -54,12 +61,26 @@ class Agent:
         messages = [dict(m) for m in messages]
         citations: list[Citation] = []
         usage = Usage()
+        steps: list[dict[str, Any]] = []
+
+        def turn(answer: str | None, pending: ToolCall | None = None) -> Turn:
+            return Turn(answer, messages, pending, citations, usage, steps)
 
         for _ in range(MAX_STEPS):
+            started = self.clock()
             reply = self.model.chat(self.system, messages, self.tool_specs)
             usage += reply.usage
+            steps.append(
+                {
+                    "name": "chat",
+                    "type": "CHAT_MODEL",
+                    "ms": self._ms_since(started),
+                    "input_tokens": reply.usage.input_tokens,
+                    "output_tokens": reply.usage.output_tokens,
+                }
+            )
             if not reply.tool_calls:
-                return Turn(reply.text, messages, citations=citations, usage=usage)
+                return turn(reply.text)
 
             messages.append(
                 {
@@ -73,12 +94,28 @@ class Agent:
                 if tool_call.name in self.client_tools:
                     pending = pending or tool_call
                     continue
-                content = self._run_tool(tool_call, citations)
+                started = self.clock()
+                found: list[Citation] = []
+                content = self._run_tool(tool_call, found)
+                for c in found:  # one citation per page: its best-ranked section
+                    if all(c.url != seen.url for seen in citations):
+                        citations.append(c)
+                steps.append(
+                    {
+                        "name": tool_call.name,
+                        "type": "TOOL",
+                        "ms": self._ms_since(started),
+                        "sources": [{"title": c.title, "url": c.url} for c in found],
+                    }
+                )
                 messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": content})
             if pending:
-                return Turn(None, messages, pending=pending, citations=citations, usage=usage)
+                return turn(None, pending)
 
-        return Turn(GIVE_UP, messages, citations=citations, usage=usage)
+        return turn(GIVE_UP)
+
+    def _ms_since(self, started: float) -> int:
+        return round((self.clock() - started) * 1000)
 
     def _run_tool(self, tool_call: ToolCall, citations: list[Citation]) -> str:
         with mlflow.start_span(name=tool_call.name, span_type=SpanType.TOOL) as span:

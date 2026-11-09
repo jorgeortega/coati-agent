@@ -178,3 +178,44 @@ def test_reports_a_failing_tool_to_the_model_instead_of_crashing():
 
     assert "failed" in model.calls[1][-1]["content"]
     assert turn.answer == "Sorry."
+
+
+def test_records_each_step_for_the_page():
+    clock = iter([0.0, 0.4, 0.4, 0.5, 0.5, 1.2]).__next__
+    model = FakeModel(call("search_docs", query="SSO"), say("Enterprise."))
+    a = Agent(
+        model=model,
+        system="rules",
+        tool_specs=SPECS,
+        tools={"search_docs": search_docs},
+        clock=clock,
+    )
+
+    turn = a.run(USER)
+
+    assert turn.steps == [
+        {"name": "chat", "type": "CHAT_MODEL", "ms": 400, "input_tokens": 10, "output_tokens": 5},
+        {
+            "name": "search_docs",
+            "type": "TOOL",
+            "ms": 100,
+            "sources": [{"title": "Enterprise", "url": "/enterprise"}],
+        },
+        {"name": "chat", "type": "CHAT_MODEL", "ms": 700, "input_tokens": 10, "output_tokens": 5},
+    ]
+
+
+def test_keeps_one_citation_per_page():
+    def two_chunks(query: str) -> ToolResult:
+        return ToolResult(
+            content="...",
+            citations=[
+                Citation(title="Errors › Refused", url="/errors"),
+                Citation(title="Errors › Timeouts", url="/errors"),
+            ],
+        )
+
+    model = FakeModel(call("search_docs", query="x"), say("ok"))
+    a = Agent(model=model, system="r", tool_specs=SPECS, tools={"search_docs": two_chunks})
+
+    assert a.run(USER).citations == [Citation(title="Errors › Refused", url="/errors")]
