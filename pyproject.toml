@@ -36,3 +36,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# Prompt text is kept one instruction per line, unwrapped.
+"src/coati_agent/prompt.py" = ["E501"]

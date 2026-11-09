@@ -1,0 +1,8 @@
+{
+  "source": "latitude10: tests/agent-lab-export.test.ts",
+  "files": {
+    "docs.jsonl": "fa8a7063f1a390ff65fec7858e06cbed3ee0d8e8a1beb253fd30ca211954e48c",
+    "rules.txt": "cf442cd157fb2bf53292eeaaf0a4d935c3d472ed2d69e6eabda190343b5ff7a7",
+    "site-summary.md": "d662a34f56a848243d648442d3c4d6b36dcdf368fc78fa45a98598667d89387f"
+  }
+}
