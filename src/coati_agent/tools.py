@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from urllib.parse import urlparse
 
 
 @dataclass(frozen=True)
@@ -25,6 +27,29 @@ ServerTool = Callable[..., ToolResult]
 # readiness rules are TypeScript, and Free Edition can't reach the internet
 # freely. The loop hands the call back and resumes when the result arrives.
 CLIENT_TOOLS: frozenset[str] = frozenset({"check_readiness"})
+
+# What a client tool's answer cites: the page that runs the same rules.
+READINESS = Citation("Agent readiness check", "https://latitude10.tech/agent-readiness")
+CLIENT_CITATIONS: dict[str, Citation] = {"check_readiness": READINESS}
+
+
+def client_tool_error(name: str, arguments: str) -> str | None:
+    """Why a client call can't be handed back, or None. The Worker checks again."""
+    try:
+        args = json.loads(arguments or "{}")
+    except ValueError:
+        args = None
+    if not isinstance(args, dict) or not isinstance(args.get("url"), str):
+        return f"Error: {name} needs a url: the https URL of an OpenAPI document."
+    url = args["url"].strip()
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname or len(url) > 2048:
+        return (
+            f"Error: {name} only checks a public https URL of an OpenAPI document. "
+            "Ask the visitor for one."
+        )
+    return None
+
 
 CHECK_READINESS_SPEC = {
     "type": "function",

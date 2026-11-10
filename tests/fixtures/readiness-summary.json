@@ -1,0 +1,176 @@
+{
+  "api": {
+    "title": "Orders API",
+    "version": "1.4.0",
+    "openapi": "3.1.0"
+  },
+  "source": "https://api.example.com/openapi.json",
+  "score": 54,
+  "verdict": "Agents will struggle with this API as it is.",
+  "operations": 5,
+  "rules": [
+    {
+      "id": "operation-ids",
+      "title": "Every operation has a clear operationId",
+      "weight": 10,
+      "passing": 3,
+      "applicable": 5,
+      "fix": "Give each operation an operationId that says what it does (listOrders, refundOrder). It becomes the tool name."
+    },
+    {
+      "id": "summaries",
+      "title": "Every operation has a summary",
+      "weight": 8,
+      "passing": 2,
+      "applicable": 5,
+      "fix": "Add a short summary (under 80 characters): clients show it as the tool's title."
+    },
+    {
+      "id": "descriptions",
+      "title": "Descriptions say what the operation does, when to use it, and what it returns",
+      "weight": 10,
+      "passing": 1,
+      "applicable": 5,
+      "fix": "Write a description of at least 40 characters per operation, different from the others: models pick tools by it."
+    },
+    {
+      "id": "parameter-descriptions",
+      "title": "Parameters are described",
+      "weight": 8,
+      "passing": 1,
+      "applicable": 5,
+      "fix": "Describe each parameter: its meaning, format and allowed values."
+    },
+    {
+      "id": "enums",
+      "title": "Parameters with a fixed set of values list them",
+      "weight": 4,
+      "passing": 0,
+      "applicable": 1,
+      "fix": "Give status/sort/type-like parameters an enum (or list the values in the description)."
+    },
+    {
+      "id": "examples",
+      "title": "Operations have an example",
+      "weight": 6,
+      "passing": 1,
+      "applicable": 5,
+      "fix": "Add an example for each operation (a parameter, request or response example): models copy examples."
+    },
+    {
+      "id": "json-bodies",
+      "title": "Request bodies are JSON",
+      "weight": 5,
+      "passing": 2,
+      "applicable": 2
+    },
+    {
+      "id": "response-schemas",
+      "title": "Success responses have a JSON schema",
+      "weight": 8,
+      "passing": 5,
+      "applicable": 5
+    },
+    {
+      "id": "error-responses",
+      "title": "Errors are described",
+      "weight": 6,
+      "passing": 2,
+      "applicable": 5,
+      "fix": "Document the errors an operation returns (400, 404, 409…) so agents can recover instead of retrying blindly."
+    },
+    {
+      "id": "pagination",
+      "title": "List endpoints are paginated",
+      "weight": 6,
+      "passing": 1,
+      "applicable": 1
+    },
+    {
+      "id": "security",
+      "title": "How to authenticate is described",
+      "weight": 8,
+      "passing": 1,
+      "applicable": 1
+    },
+    {
+      "id": "idempotency",
+      "title": "Writes have an idempotency story",
+      "weight": 5,
+      "passing": 0,
+      "applicable": 2,
+      "fix": "Accept an Idempotency-Key header on POST/PATCH (Agentify honours it for agents), so a retry doesn't do the work twice."
+    },
+    {
+      "id": "tool-count",
+      "title": "A manageable number of tools, with distinct names",
+      "weight": 4,
+      "passing": 1,
+      "applicable": 1
+    }
+  ],
+  "findingsTotal": 23,
+  "warnings": [],
+  "checkedWith": "Agentify API 1.0.4 readiness rules (the same score as `npx agentify check`): https://latitude10.tech/products/agentify-api",
+  "topFindings": [
+    {
+      "rule": "operation-ids",
+      "where": "POST /v1/orders",
+      "message": "no operationId"
+    },
+    {
+      "rule": "operation-ids",
+      "where": "GET /v1/orders/{id}",
+      "message": "operationId \"get2\" is ambiguous"
+    },
+    {
+      "rule": "descriptions",
+      "where": "GET /v1/orders",
+      "message": "no description"
+    },
+    {
+      "rule": "descriptions",
+      "where": "POST /v1/orders",
+      "message": "no description"
+    },
+    {
+      "rule": "descriptions",
+      "where": "GET /v1/orders/{id}",
+      "message": "no description"
+    },
+    {
+      "rule": "descriptions",
+      "where": "POST /v1/orders/{id}/refund",
+      "message": "description is too short (7 characters)"
+    },
+    {
+      "rule": "summaries",
+      "where": "GET /v1/orders",
+      "message": "no summary"
+    },
+    {
+      "rule": "summaries",
+      "where": "GET /v1/orders/{id}",
+      "message": "no summary"
+    },
+    {
+      "rule": "summaries",
+      "where": "POST /v1/orders/{id}/refund",
+      "message": "no summary"
+    },
+    {
+      "rule": "parameter-descriptions",
+      "where": "GET /v1/orders query:status",
+      "message": "parameter status has no description"
+    }
+  ],
+  "fullReport": {
+    "url": "https://latitude10.tech/api/readiness/report",
+    "method": "POST",
+    "body": "{\"url\": \"https://api.example.com/openapi.json\"}",
+    "price": "$0.10",
+    "pay": "x402 v2: USDC on Base or Solana. Any x402 client pays and retries automatically.",
+    "includes": "Every finding (23 here) and a suggested fix per operation: operationIds, summaries, descriptions, parameter descriptions, examples and Idempotency-Key headers."
+  },
+  "help": "Latitude 10 turns APIs into production MCP servers and lists them on agent platforms: https://latitude10.tech/services"
+}
