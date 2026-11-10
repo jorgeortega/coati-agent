@@ -16,6 +16,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+  "databricks-agents~=1.13.0",  # Databricks' managed judges, for evals only
   "pytest~=9.2.0",
   "ruff~=0.17.4",
 ]
