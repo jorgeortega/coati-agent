@@ -219,3 +219,21 @@ def test_keeps_one_citation_per_page():
     a = Agent(model=model, system="r", tool_specs=SPECS, tools={"search_docs": two_chunks})
 
     assert a.run(USER).citations == [Citation(title="Errors › Refused", url="/errors")]
+
+
+def test_asks_again_once_when_the_answer_is_empty():
+    model = FakeModel(say("  "), say("Enterprise."))
+    turn = agent(model).run(USER)
+
+    assert turn.answer == "Enterprise."
+    assert len(model.calls) == 2
+    assert model.calls[1] == USER  # the empty reply is not added to the history
+    assert [s.get("empty") for s in turn.steps] == [True, None]
+
+
+def test_gives_up_when_the_answer_is_empty_twice():
+    model = FakeModel(say(""), say(""))
+    turn = agent(model).run(USER)
+
+    assert turn.answer == GIVE_UP
+    assert len(model.calls) == 2

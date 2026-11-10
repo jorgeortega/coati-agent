@@ -200,7 +200,7 @@ def local_target(model: str, recorder: Recorder, profile: str | None = None):
     from .index import DatabricksEmbedder, DocsIndex
     from .llm import OpenAICompatibleModel
     from .prompt import system_prompt
-    from .serve import CoatiAgent
+    from .serve import DEFAULT_CONFIG, CoatiAgent
     from .workspace import openai_client
 
     index_dir = ROOT / "build" / "index"
@@ -208,7 +208,7 @@ def local_target(model: str, recorder: Recorder, profile: str | None = None):
         raise SystemExit("No build/index: run `python -m coati_agent.index` first.")
     client = openai_client(profile, max_retries=6)
     agent = CoatiAgent.from_parts(
-        model=OpenAICompatibleModel(client, model),
+        model=OpenAICompatibleModel(client, model, DEFAULT_CONFIG["max_tokens"]),
         index=DocsIndex.load(index_dir),
         embedder=DatabricksEmbedder(client, "databricks-gte-large-en", min_interval=0),
         system=system_prompt(),
@@ -414,6 +414,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--limit", type=int, default=None, help="Only the first N cases (pilot)")
     parser.add_argument("--only", default=None, help="Comma-separated case ids")
     parser.add_argument("--workers", default="2", help="Parallel predictions (rate limits)")
+    parser.add_argument("--label", default=None, help="Results file label (default: the target)")
     parser.add_argument("--table", action="store_true", help="Only write evals/RESULTS.md")
     args = parser.parse_args(argv)
     if args.table:
@@ -440,6 +441,7 @@ def main(argv: list[str] | None = None) -> None:
         predict, label = baseline_target(args.baseline_url, recorder), "baseline-coati"
     else:
         predict, label = local_target(args.model, recorder), args.model.removeprefix("databricks-")
+    label = args.label or label
     if args.limit or args.only:
         label += "-pilot"
 

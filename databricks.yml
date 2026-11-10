@@ -7,7 +7,7 @@ bundle:
 variables:
   model:
     description: Foundation Model API endpoint the agent calls (spec D2).
-    default: databricks-gpt-oss-120b
+    default: databricks-qwen35-122b-a10b
   embedding_model:
     description: Embedding endpoint for the docs index (spec D1).
     default: databricks-gte-large-en
@@ -16,7 +16,7 @@ variables:
     default: workspace
   model_version:
     description: The registered coati_agent version to serve (scripts/log_model.py prints it).
-    default: "2"
+    default: "3"
   experiment_id:
     description: MLflow experiment the endpoint's traces go to (/Users/<you>/coati-agent).
     default: "795534058228195"

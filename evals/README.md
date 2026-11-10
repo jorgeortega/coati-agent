@@ -72,3 +72,18 @@ in a v2 set if it's changed.
 
 Still to do: a human review of a sample of judge verdicts (judge alignment),
 before any score goes on a public page.
+
+## Model v3, 2026-11-10
+
+The endpoint now serves Qwen3.5 122B (registered version 3), with three
+changes from the run above: the agent asks once more when an answer is empty
+(and gives up politely if it's empty twice), the answer budget is 1,500 tokens
+instead of 500, and the prompt says to link docs pages with the full URL from
+the search result. Row `qwen35-122b-a10b-v3`:
+
+- No empty answers in 40, and every docs link on the docs host (40/40).
+- Correct facts 18/24 against 19/24 before, and right page searched 12/16
+  against 11/16: within the run-to-run spread seen above.
+- New misses to look at: d09 (a real question about the platform) was turned
+  down as off-topic, and u02 said GraphQL "is not supported" instead of saying
+  it doesn't know.

@@ -22,9 +22,9 @@ from .prompt import system_prompt
 from .tools import CHECK_READINESS_SPEC
 
 DEFAULT_CONFIG = {
-    "llm_endpoint": "databricks-gpt-oss-120b",  # Task 6 comparison; Task 7 evals decide
+    "llm_endpoint": "databricks-qwen35-122b-a10b",  # chosen by the Task 7 evals
     "embedding_endpoint": "databricks-gte-large-en",
-    "max_tokens": 500,
+    "max_tokens": 1500,  # Qwen3.5 reasons first; 500 left some answers empty
     "k": 5,
 }
 

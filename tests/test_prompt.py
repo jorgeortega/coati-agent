@@ -39,3 +39,9 @@ def test_the_manifest_comes_from_the_site():
     manifest = json.loads((DATA_DIR / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["source"].startswith("latitude10:")
     assert set(manifest["files"]) == {"docs.jsonl", "rules.txt", "site-summary.md"}
+
+
+def test_the_prompt_asks_for_full_docs_urls():
+    from coati_agent.prompt import TOOLS_NOTE
+
+    assert "https://docs.latitude10.tech/" in TOOLS_NOTE

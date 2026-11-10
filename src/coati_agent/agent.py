@@ -62,6 +62,7 @@ class Agent:
         citations: list[Citation] = []
         usage = Usage()
         steps: list[dict[str, Any]] = []
+        retried_empty = False
 
         def turn(answer: str | None, pending: ToolCall | None = None) -> Turn:
             return Turn(answer, messages, pending, citations, usage, steps)
@@ -80,7 +81,15 @@ class Agent:
                 }
             )
             if not reply.tool_calls:
-                return turn(reply.text)
+                if reply.text.strip():
+                    return turn(reply.text)
+                # Some reasoning models spend the whole budget thinking and
+                # answer with nothing. Ask once more; never show a blank.
+                steps[-1]["empty"] = True
+                if retried_empty:
+                    return turn(GIVE_UP)
+                retried_empty = True
+                continue
 
             messages.append(
                 {
