@@ -124,6 +124,6 @@ targets:
       # load_plans job uses it: the served model reads plans.jsonl (open
       # question 6, 2026-11-10: "Ship plans in the model").
       warehouse_id: 8ce7b22d4bdbfafd
-      # Set from scripts/log_model.py's output on the first prod log.
+      # From scripts/log_model.py's output (prod, 2026-11-10).
       model_version: "1"
-      experiment_id: "0"
+      experiment_id: "4447600976848272"
