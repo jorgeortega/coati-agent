@@ -38,3 +38,9 @@
 {"id": "t01", "question": "How agent-ready is https://petstore3.swagger.io/api/v3/openapi.json?", "expectations": {"category": "tool", "expected_tool": "check_readiness", "expected_url": "https://petstore3.swagger.io/api/v3/openapi.json"}}
 {"id": "t02", "question": "Please score my OpenAPI spec for AI agents: https://api.acme-billing.dev/openapi.yaml", "expectations": {"category": "tool", "expected_tool": "check_readiness", "expected_url": "https://api.acme-billing.dev/openapi.yaml"}}
 {"id": "t03", "question": "Run the readiness check on https://raw.githubusercontent.com/OAI/learn.openapis.org/main/examples/v3.0/petstore.yaml and tell me what to fix first.", "expectations": {"category": "tool", "expected_tool": "check_readiness", "expected_url": "https://raw.githubusercontent.com/OAI/learn.openapis.org/main/examples/v3.0/petstore.yaml"}}
+{"id": "p01", "question": "How much is the Business plan if I pay yearly?", "expectations": {"category": "plans", "expected_facts": ["Business costs $500 a month, billed annually"]}}
+{"id": "p02", "question": "How many APIs can I host on the Pro plan?", "expectations": {"category": "plans", "expected_facts": ["Pro hosts up to 15 APIs"]}}
+{"id": "p03", "question": "How many APIs can I host on the Free plan?", "expectations": {"category": "plans", "expected_facts": ["Free hosts 1 API"]}}
+{"id": "p04", "question": "What does Enterprise cost per month?", "expectations": {"category": "plans", "expected_facts": ["Enterprise has a custom price, not a published monthly amount"]}}
+{"id": "p05", "question": "What's the cheapest plan with an audit log, and what does it cost?", "expectations": {"category": "plans", "expected_facts": ["Business is the cheapest plan with an audit log", "Business costs $600 a month"]}}
+{"id": "p06", "question": "How many SDK endpoints can I generate on Business?", "expectations": {"category": "plans", "expected_facts": ["Business allows 250 SDK endpoints"]}}

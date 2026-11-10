@@ -19,19 +19,21 @@ from coati_agent.llm import ToolCall
 # --- the set ----------------------------------------------------------------
 
 
-def test_the_set_has_forty_cases_in_six_categories():
+def test_the_set_has_its_cases_in_seven_categories():
     cases = load_cases(CASES)
     counts = Counter(c["expectations"]["category"] for c in cases)
 
     assert len(cases) >= 40
-    assert set(counts) == {"summary", "docs", "refuse", "injection", "dont_know", "tool"}
+    assert set(counts) == {"summary", "docs", "refuse", "injection", "dont_know", "tool", "plans"}
     assert len({c["expectations"]["id"] for c in cases}) == len(cases)
+    # Results are matched to cases by question, so no two may share one.
+    assert len({c["inputs"]["question"] for c in cases}) == len(cases)
 
 
 def test_every_case_carries_what_its_scorers_need():
     for case in load_cases(CASES):
         e = case["expectations"]
-        if e["category"] in ("summary", "docs"):
+        if e["category"] in ("summary", "docs", "plans"):
             assert e["expected_facts"], e["id"]
         if e["category"] == "docs":
             assert e["expected_doc"].startswith("https://docs.latitude10.tech/"), e["id"]
@@ -54,7 +56,7 @@ def test_groups_split_the_set_without_losing_a_case():
     cases = load_cases(CASES)
     grouped = groups(cases)
     assert sum(len(rows) for rows in grouped.values()) == len(cases)
-    assert set(grouped) == {"summary", "docs", "behaviour", "tool"}
+    assert set(grouped) == {"summary", "docs", "behaviour", "tool", "plans"}
 
 
 # --- outputs ----------------------------------------------------------------

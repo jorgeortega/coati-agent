@@ -38,7 +38,7 @@ def test_a_missing_file_is_refused(tmp_path):
 def test_the_manifest_comes_from_the_site():
     manifest = json.loads((DATA_DIR / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["source"].startswith("latitude10:")
-    assert set(manifest["files"]) == {"docs.jsonl", "rules.txt", "site-summary.md"}
+    assert set(manifest["files"]) == {"docs.jsonl", "plans.jsonl", "rules.txt", "site-summary.md"}
 
 
 def test_the_prompt_asks_for_full_docs_urls():

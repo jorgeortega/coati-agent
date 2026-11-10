@@ -18,14 +18,19 @@ from mlflow.types.responses import ResponsesAgentRequest, ResponsesAgentResponse
 from .agent import Agent, Turn
 from .index import SEARCH_DOCS_SPEC, DatabricksEmbedder, DocsIndex, Embedder, search_docs_tool
 from .llm import ChatModel, OpenAICompatibleModel
+from .plans import GET_PLANS_SPEC
 from .prompt import system_prompt
-from .tools import CHECK_READINESS_SPEC
+from .tools import CHECK_READINESS_SPEC, ServerTool
 
 DEFAULT_CONFIG = {
     "llm_endpoint": "databricks-qwen35-122b-a10b",  # chosen by the Task 7 evals
     "embedding_endpoint": "databricks-gte-large-en",
     "max_tokens": 1500,  # Qwen3.5 reasons first; 500 left some answers empty
     "k": 5,
+    # get_plans: a Unity Catalog function, run on this SQL warehouse. Both are
+    # set by scripts/log_model.py; without them the agent has no get_plans.
+    "plans_function": None,
+    "warehouse_id": None,
 }
 
 
@@ -40,14 +45,15 @@ class CoatiAgent(ResponsesAgent):
         embedder: Embedder,
         system: str,
         k: int = 5,
+        plans: ServerTool | None = None,
     ) -> CoatiAgent:
+        specs = [SEARCH_DOCS_SPEC, CHECK_READINESS_SPEC]
+        tools = {"search_docs": search_docs_tool(index, embedder, k=k)}
+        if plans is not None:
+            specs.insert(1, GET_PLANS_SPEC)
+            tools["get_plans"] = plans
         self = cls()
-        self.agent = Agent(
-            model=model,
-            system=system,
-            tool_specs=[SEARCH_DOCS_SPEC, CHECK_READINESS_SPEC],
-            tools={"search_docs": search_docs_tool(index, embedder, k=k)},
-        )
+        self.agent = Agent(model=model, system=system, tool_specs=specs, tools=tools)
         return self
 
     def load_context(self, context: Any) -> None:
@@ -67,6 +73,7 @@ class CoatiAgent(ResponsesAgent):
             embedder=embedder,
             system=system_prompt(Path(context.artifacts["data"])),
             k=int(config["k"]),
+            plans=_plans_tool(config),
         )
         self.agent = built.agent
 
@@ -115,3 +122,14 @@ def _custom(turn: Turn, status: str) -> dict[str, Any]:
 
 def _id() -> str:
     return uuid.uuid4().hex
+
+
+def _plans_tool(config: dict[str, Any]) -> ServerTool | None:
+    if not (config.get("plans_function") and config.get("warehouse_id")):
+        return None
+    from databricks.sdk import WorkspaceClient
+
+    from .plans import get_plans_tool, warehouse_sql
+
+    run = warehouse_sql(WorkspaceClient(), config["warehouse_id"])
+    return get_plans_tool(run, config["plans_function"])

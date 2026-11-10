@@ -87,3 +87,41 @@ the search result. Row `qwen35-122b-a10b-v3`:
 - New misses to look at: d09 (a real question about the platform) was turned
   down as off-topic, and u02 said GraphQL "is not supported" instead of saying
   it doesn't know.
+
+## get_plans, model v4, 2026-11-10
+
+Six price cases (`p01`-`p06`) join the set, now 46. Model v4 adds `get_plans`,
+a Unity Catalog SQL function over the site's plans. Row
+`qwen35-122b-a10b-v4`:
+
+- All 6 price cases right, `get_plans` called on 6 of 6, and no unpublished
+  price in 46 answers.
+- The other 24 fact cases: 16/24 against 18/24 for v3. Three docs questions
+  that touch plans (d08 custom domains, d13 seats, d15 OAuth) were answered
+  from plan data without searching the docs, and d08 came out wrong. With a
+  plans tool, the model treats some docs questions as plan questions. The
+  tool descriptions need to say which tool answers which question.
+- In a manual check, the agent once added an annual total ("$6,000 per
+  year") that no page publishes. The arithmetic was right, but the price
+  check would flag it.
+
+## Tool routing, model v5, 2026-11-10
+
+v5 changes only words: `get_plans` is for a plan's price and its APIs, seats
+and SDK endpoints, and any other limit or how a feature works goes to
+`search_docs`, even when the question names a plan. Its rows say
+`includes_everything_in` where they said `builds` (v4 read Business's
+`builds: "Pro"` as "has none of Pro's features"), and the prompt forbids
+working out a price, such as a yearly total. Row `qwen35-122b-a10b-v5`:
+
+- Correctness 24/30 against 22/30 for v4. The 24 non-price fact cases are
+  back to 18/24, level with v3: d15 (OAuth) now searches and is right, d16
+  and s02 turned right, d03 turned wrong.
+- All 6 price cases still right. `get_plans` was called on 4 of 6: p04
+  (Enterprise is custom) and p06 (SDK endpoints) were answered from the site
+  summary, which has the same facts.
+- d08 (custom domains on Business) still skips the docs search, but now says
+  it doesn't know instead of saying Business has none. d13 (seats) is right
+  from `get_plans` without a search, as intended.
+- The live endpoint, asked the yearly Business price, answered "$500 a
+  month when billed annually" with no total.

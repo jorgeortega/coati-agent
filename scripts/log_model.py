@@ -1,6 +1,7 @@
 """Log the agent to MLflow on Databricks and register it in Unity Catalog.
 
-    DATABRICKS_CONFIG_PROFILE=coati-free uv run python scripts/log_model.py
+    DATABRICKS_CONFIG_PROFILE=coati-free uv run python scripts/log_model.py \
+        --warehouse-id <id>
 
 The index is the one the embed_docs job built in the artifacts volume. Logging
 runs one prediction locally against the workspace (the input example), so a
@@ -16,7 +17,12 @@ from pathlib import Path
 
 import mlflow
 from databricks.sdk import WorkspaceClient
-from mlflow.models.resources import DatabricksServingEndpoint
+from mlflow.models.resources import (
+    DatabricksFunction,
+    DatabricksServingEndpoint,
+    DatabricksSQLWarehouse,
+    DatabricksTable,
+)
 
 from coati_agent.serve import DEFAULT_CONFIG
 
@@ -38,6 +44,7 @@ def main() -> None:
     parser.add_argument("--schema", default="dev_jorgeortega_coati_agent")
     parser.add_argument("--llm", default=DEFAULT_CONFIG["llm_endpoint"])
     parser.add_argument("--experiment", default=None)
+    parser.add_argument("--warehouse-id", required=True, help="SQL warehouse that runs get_plans")
     args = parser.parse_args()
 
     w = WorkspaceClient()
@@ -47,7 +54,13 @@ def main() -> None:
     mlflow.set_experiment(args.experiment or f"/Users/{me}/coati-agent")
 
     volume_dir = f"/Volumes/{args.catalog}/{args.schema}/artifacts/index"
-    config = {**DEFAULT_CONFIG, "llm_endpoint": args.llm}
+    plans_function = f"{args.catalog}.{args.schema}.get_plans"
+    config = {
+        **DEFAULT_CONFIG,
+        "llm_endpoint": args.llm,
+        "plans_function": plans_function,
+        "warehouse_id": args.warehouse_id,
+    }
     model_name = f"{args.catalog}.{args.schema}.coati_agent"
 
     with tempfile.TemporaryDirectory() as tmp, mlflow.start_run(run_name="log coati_agent"):
@@ -61,6 +74,9 @@ def main() -> None:
             resources=[
                 DatabricksServingEndpoint(endpoint_name=config["llm_endpoint"]),
                 DatabricksServingEndpoint(endpoint_name=config["embedding_endpoint"]),
+                DatabricksSQLWarehouse(warehouse_id=args.warehouse_id),
+                DatabricksFunction(function_name=plans_function),
+                DatabricksTable(table_name=f"{args.catalog}.{args.schema}.plans"),
             ],
             pip_requirements=[f"{p}=={version(p)}" for p in PINNED],
             input_example={"input": [{"role": "user", "content": "Which plan includes SSO?"}]},

@@ -16,7 +16,10 @@ variables:
     default: workspace
   model_version:
     description: The registered coati_agent version to serve (scripts/log_model.py prints it).
-    default: "3"
+    default: "5"
+  warehouse_id:
+    description: SQL warehouse that builds and runs get_plans (in dev, the Serverless Starter Warehouse).
+    default: 5c1fa70d1a062e36
   experiment_id:
     description: MLflow experiment the endpoint's traces go to (/Users/<you>/coati-agent).
     default: "795534058228195"
@@ -58,6 +61,30 @@ resources:
               - /Volumes/${var.catalog}/${resources.schemas.coati_agent.name}/${resources.volumes.artifacts.name}/index
               - --endpoint
               - ${var.embedding_model}
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ./dist/*.whl
+
+    load_plans:
+      name: coati-agent load_plans
+      description: Copies the site's plans.jsonl into the artifacts volume and builds the plans table and the get_plans function.
+      max_concurrent_runs: 1
+      tasks:
+        - task_key: load
+          environment_key: default
+          python_wheel_task:
+            package_name: coati_agent
+            entry_point: coati-plans
+            parameters:
+              - --catalog
+              - ${var.catalog}
+              - --schema
+              - ${resources.schemas.coati_agent.name}
+              - --warehouse-id
+              - ${var.warehouse_id}
       environments:
         - environment_key: default
           spec:

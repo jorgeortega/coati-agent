@@ -91,3 +91,30 @@ def test_a_client_tool_comes_back_pending_and_the_turn_resumes_with_its_output()
 def test_the_served_tools_are_search_docs_and_the_client_tool():
     names = [spec["function"]["name"] for spec in agent().agent.tool_specs]
     assert names == ["search_docs", "check_readiness"]
+
+
+def test_get_plans_is_offered_and_run_when_a_plans_tool_is_given():
+    from coati_agent.tools import Citation, ToolResult
+
+    def get_plans(plan=None):
+        return ToolResult('[{"name": "Pro", "seats": 5}]', [Citation("Pricing", "p")])
+
+    model = FakeModel(call("get_plans", "c1", plan="Pro"), Reply("Pro has 5 seats.", [], Usage()))
+    a = CoatiAgent.from_parts(
+        model=model,
+        index=build_index(ROWS, Embedder()),
+        embedder=Embedder(),
+        system="rules",
+        plans=get_plans,
+    )
+
+    out = ask(a, [{"role": "user", "content": "How many seats on Pro?"}])
+
+    assert "get_plans" in [s["function"]["name"] for s in a.agent.tool_specs]
+    assert out["output"][1]["output"] == '[{"name": "Pro", "seats": 5}]'
+    assert out["custom_outputs"]["citations"] == [{"title": "Pricing", "url": "p"}]
+
+
+def test_without_a_plans_tool_get_plans_is_not_offered():
+    names = [s["function"]["name"] for s in agent().agent.tool_specs]
+    assert "get_plans" not in names

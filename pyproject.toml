@@ -27,6 +27,7 @@ build-backend = "hatchling.build"
 
 [project.scripts]
 coati-index = "coati_agent.index:main"
+coati-plans = "coati_agent.plans:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/coati_agent"]
@@ -35,6 +36,7 @@ packages = ["src/coati_agent"]
 # The site's export, hash-checked by prompt.py, travels inside the wheel.
 "data/docs.jsonl" = "coati_agent/data/docs.jsonl"
 "data/manifest.json" = "coati_agent/data/manifest.json"
+"data/plans.jsonl" = "coati_agent/data/plans.jsonl"
 "data/rules.txt" = "coati_agent/data/rules.txt"
 "data/site-summary.md" = "coati_agent/data/site-summary.md"
 
