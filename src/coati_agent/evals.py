@@ -246,9 +246,13 @@ def local_target(
 
 
 def _plans(profile: str | None, warehouse_id: str | None, function: str):
-    """get_plans on a SQL warehouse, or no get_plans without --warehouse-id."""
+    """get_plans on a SQL warehouse, or from the shipped plans.jsonl without
+    --warehouse-id (what the served model does by default)."""
     if not warehouse_id:
-        return None
+        from .plans import file_plans_tool, parse_rows
+        from .prompt import DATA_DIR, load_export
+
+        return file_plans_tool(parse_rows(load_export(DATA_DIR)["plans.jsonl"]))
     from databricks.sdk import WorkspaceClient
 
     from .plans import get_plans_tool, warehouse_sql

@@ -110,3 +110,56 @@ def test_the_spec_names_the_tool_and_its_optional_argument():
 def test_a_statement_with_no_columns_has_no_rows():
     assert parse_result({"manifest": {"schema": {}}, "status": {"state": "SUCCEEDED"}}) == []
     assert parse_result({"status": {"state": "SUCCEEDED"}}) == []
+
+
+# get_plans from the shipped file (spec, open question 6: the paid workspace
+# reads plans.jsonl from the model's data, with no SQL warehouse).
+
+from coati_agent.plans import file_plans_tool, parse_rows  # noqa: E402
+from coati_agent.prompt import DATA_DIR, load_export  # noqa: E402
+
+ROWS = parse_rows(load_export(DATA_DIR)["plans.jsonl"])
+
+
+def test_the_shipped_file_has_every_plan_with_the_function_s_columns():
+    assert [r["id"] for r in ROWS] == ["free", "pro", "business", "enterprise"]
+    columns = [
+        "id",
+        "name",
+        "audience",
+        "launched",
+        "builds",
+        "price",
+        "annual_price",
+        "apis",
+        "seats",
+        "sdk_endpoints",
+        "included",
+        "planned",
+    ]
+    assert all(list(r) == columns for r in ROWS)
+
+
+@pytest.mark.parametrize("plan", [None, "pro", "Pro", "  BUSINESS ", "enterprise"])
+def test_the_file_tool_answers_exactly_as_the_function_does(plan):
+    def function_like(statement, parameters):
+        wanted = parameters["plan"]
+        if wanted is None:
+            return ROWS
+        key = wanted.strip().lower()
+        return [r for r in ROWS if r["id"].lower() == key or r["name"].lower() == key]
+
+    from_function = get_plans_tool(function_like, FUNCTION)(plan=plan)
+    from_file = file_plans_tool(ROWS)(plan=plan)
+
+    assert from_file == from_function
+
+
+def test_the_file_tool_says_so_when_no_plan_matches():
+    result = file_plans_tool(ROWS)(plan="Platinum")
+    assert "No plan" in result.content
+    assert result.citations == []
+
+
+def test_parse_rows_skips_blank_lines():
+    assert parse_rows('{"id": "free"}\n\n{"id": "pro"}\n') == [{"id": "free"}, {"id": "pro"}]

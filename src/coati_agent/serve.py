@@ -19,7 +19,7 @@ from .agent import Agent, Turn
 from .index import SEARCH_DOCS_SPEC, DatabricksEmbedder, DocsIndex, Embedder, search_docs_tool
 from .llm import ChatModel, OpenAICompatibleModel
 from .plans import GET_PLANS_SPEC
-from .prompt import system_prompt
+from .prompt import load_export, system_prompt
 from .tools import CHECK_READINESS_SPEC, ServerTool
 
 DEFAULT_CONFIG = {
@@ -27,8 +27,9 @@ DEFAULT_CONFIG = {
     "embedding_endpoint": "databricks-gte-large-en",
     "max_tokens": 1500,  # Qwen3.5 reasons first; 500 left some answers empty
     "k": 5,
-    # get_plans: a Unity Catalog function, run on this SQL warehouse. Both are
-    # set by scripts/log_model.py; without them the agent has no get_plans.
+    # get_plans reads the plans.jsonl the model ships with, unless both of
+    # these are set: then it calls the Unity Catalog function on this SQL
+    # warehouse (the demo on Free Edition; spec, open question 6).
     "plans_function": None,
     "warehouse_id": None,
 }
@@ -73,7 +74,7 @@ class CoatiAgent(ResponsesAgent):
             embedder=embedder,
             system=system_prompt(Path(context.artifacts["data"])),
             k=int(config["k"]),
-            plans=_plans_tool(config),
+            plans=_plans_tool(config, Path(context.artifacts["data"])),
         )
         self.agent = built.agent
 
@@ -124,9 +125,11 @@ def _id() -> str:
     return uuid.uuid4().hex
 
 
-def _plans_tool(config: dict[str, Any]) -> ServerTool | None:
+def _plans_tool(config: dict[str, Any], data_dir: Path) -> ServerTool:
+    from .plans import file_plans_tool, parse_rows
+
     if not (config.get("plans_function") and config.get("warehouse_id")):
-        return None
+        return file_plans_tool(parse_rows(load_export(data_dir)["plans.jsonl"]))
     from databricks.sdk import WorkspaceClient
 
     from .plans import get_plans_tool, warehouse_sql

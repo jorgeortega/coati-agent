@@ -118,3 +118,12 @@ targets:
     mode: production
     workspace:
       profile: coati-paid
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      # The paid workspace's Serverless Starter Warehouse. Only the optional
+      # load_plans job uses it: the served model reads plans.jsonl (open
+      # question 6, 2026-11-10: "Ship plans in the model").
+      warehouse_id: 8ce7b22d4bdbfafd
+      # Set from scripts/log_model.py's output on the first prod log.
+      model_version: "1"
+      experiment_id: "0"

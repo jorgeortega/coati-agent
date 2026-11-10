@@ -1,10 +1,13 @@
-"""get_plans: Latitude 10's plans in a Unity Catalog table, read through a SQL function.
+"""get_plans: Latitude 10's plans, from the file the model ships with or a SQL function.
 
 The site exports `plans.jsonl` from `plans.ts` (prices only for launched
-plans). `coati-plans` copies it into the artifacts volume and runs
-`sql/get_plans.sql`, which builds the table and the function. The agent's
-tool calls the function on a SQL warehouse with the model's argument as a
-parameter, never pasted into the SQL.
+plans). By default the served model reads it from its own data
+(`file_plans_tool`): no SQL warehouse, so no cost and no cold start (spec,
+open question 6). The Unity Catalog version stays for the demo: `coati-plans`
+copies the file into the artifacts volume and runs `sql/get_plans.sql`, which
+builds the table and the function, and `get_plans_tool` calls the function on
+a SQL warehouse with the model's argument as a parameter, never pasted into
+the SQL. Both answer the same.
 
     DATABRICKS_CONFIG_PROFILE=coati-free uv run coati-plans --warehouse-id <id>
 """
@@ -95,19 +98,42 @@ def parse_result(response: dict[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
+def _answer(rows: list[dict[str, Any]], plan: str | None) -> ToolResult:
+    """What the model sees, whichever source the rows came from."""
+    if not rows:
+        return ToolResult(
+            f"No plan is called {plan!r}. The plans are Free, Pro, Business and Enterprise."
+        )
+    compact = [
+        {RENAMED.get(k, k): v for k, v in row.items() if v not in (None, [])} for row in rows
+    ]
+    return ToolResult(json.dumps(compact, ensure_ascii=False), [PRICING])
+
+
 def get_plans_tool(run_sql: RunSql, function: str) -> ServerTool:
+    """get_plans over the Unity Catalog function, on a SQL warehouse."""
     statement = f"SELECT * FROM {function}(:plan)"
 
     def get_plans(plan: str | None = None) -> ToolResult:
-        rows = run_sql(statement, {"plan": plan})
-        if not rows:
-            return ToolResult(
-                f"No plan is called {plan!r}. The plans are Free, Pro, Business and Enterprise."
-            )
-        compact = [
-            {RENAMED.get(k, k): v for k, v in row.items() if v not in (None, [])} for row in rows
-        ]
-        return ToolResult(json.dumps(compact, ensure_ascii=False), [PRICING])
+        return _answer(run_sql(statement, {"plan": plan}), plan)
+
+    return get_plans
+
+
+def parse_rows(text: str) -> list[dict[str, Any]]:
+    return [json.loads(line) for line in text.splitlines() if line.strip()]
+
+
+def file_plans_tool(rows: list[dict[str, Any]]) -> ServerTool:
+    """get_plans over the plans.jsonl the model ships with: the same match as
+    the SQL function (id or name, any case, trimmed), and no warehouse."""
+
+    def get_plans(plan: str | None = None) -> ToolResult:
+        if plan is None:
+            return _answer(rows, plan)
+        key = plan.strip().lower()
+        matches = [r for r in rows if r["id"].lower() == key or r["name"].lower() == key]
+        return _answer(matches, plan)
 
     return get_plans
 

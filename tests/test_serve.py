@@ -118,3 +118,14 @@ def test_get_plans_is_offered_and_run_when_a_plans_tool_is_given():
 def test_without_a_plans_tool_get_plans_is_not_offered():
     names = [s["function"]["name"] for s in agent().agent.tool_specs]
     assert "get_plans" not in names
+
+
+def test_without_a_warehouse_get_plans_reads_the_shipped_file():
+    from coati_agent.prompt import DATA_DIR
+    from coati_agent.serve import DEFAULT_CONFIG, _plans_tool
+
+    tool = _plans_tool(DEFAULT_CONFIG, DATA_DIR)
+
+    rows = json.loads(tool(plan="Pro").content)
+    assert [r["name"] for r in rows] == ["Pro"]
+    assert rows[0]["price"].startswith("$")

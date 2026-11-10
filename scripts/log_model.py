@@ -1,5 +1,9 @@
 """Log the agent to MLflow on Databricks and register it in Unity Catalog.
 
+    # prod (pay-as-you-go): get_plans reads the shipped plans.jsonl
+    DATABRICKS_CONFIG_PROFILE=coati-paid uv run python scripts/log_model.py \
+        --schema coati_agent
+    # dev (Free Edition demo): get_plans calls the Unity Catalog function
     DATABRICKS_CONFIG_PROFILE=coati-free uv run python scripts/log_model.py \
         --warehouse-id <id>
 
@@ -44,7 +48,12 @@ def main() -> None:
     parser.add_argument("--schema", default="dev_jorgeortega_coati_agent")
     parser.add_argument("--llm", default=DEFAULT_CONFIG["llm_endpoint"])
     parser.add_argument("--experiment", default=None)
-    parser.add_argument("--warehouse-id", required=True, help="SQL warehouse that runs get_plans")
+    parser.add_argument(
+        "--warehouse-id",
+        default=None,
+        help="Run get_plans as the Unity Catalog function on this SQL warehouse (the "
+        "Free Edition demo). Without it, get_plans reads the shipped plans.jsonl.",
+    )
     args = parser.parse_args()
 
     w = WorkspaceClient()
@@ -54,13 +63,19 @@ def main() -> None:
     mlflow.set_experiment(args.experiment or f"/Users/{me}/coati-agent")
 
     volume_dir = f"/Volumes/{args.catalog}/{args.schema}/artifacts/index"
-    plans_function = f"{args.catalog}.{args.schema}.get_plans"
-    config = {
-        **DEFAULT_CONFIG,
-        "llm_endpoint": args.llm,
-        "plans_function": plans_function,
-        "warehouse_id": args.warehouse_id,
-    }
+    config = {**DEFAULT_CONFIG, "llm_endpoint": args.llm}
+    resources = [
+        DatabricksServingEndpoint(endpoint_name=config["llm_endpoint"]),
+        DatabricksServingEndpoint(endpoint_name=config["embedding_endpoint"]),
+    ]
+    if args.warehouse_id:
+        plans_function = f"{args.catalog}.{args.schema}.get_plans"
+        config |= {"plans_function": plans_function, "warehouse_id": args.warehouse_id}
+        resources += [
+            DatabricksSQLWarehouse(warehouse_id=args.warehouse_id),
+            DatabricksFunction(function_name=plans_function),
+            DatabricksTable(table_name=f"{args.catalog}.{args.schema}.plans"),
+        ]
     model_name = f"{args.catalog}.{args.schema}.coati_agent"
 
     with tempfile.TemporaryDirectory() as tmp, mlflow.start_run(run_name="log coati_agent"):
@@ -71,13 +86,7 @@ def main() -> None:
             code_paths=[str(ROOT / "src/coati_agent")],
             artifacts={"index": str(index_dir), "data": str(ROOT / "data")},
             model_config=config,
-            resources=[
-                DatabricksServingEndpoint(endpoint_name=config["llm_endpoint"]),
-                DatabricksServingEndpoint(endpoint_name=config["embedding_endpoint"]),
-                DatabricksSQLWarehouse(warehouse_id=args.warehouse_id),
-                DatabricksFunction(function_name=plans_function),
-                DatabricksTable(table_name=f"{args.catalog}.{args.schema}.plans"),
-            ],
+            resources=resources,
             pip_requirements=[f"{p}=={version(p)}" for p in PINNED],
             input_example={"input": [{"role": "user", "content": "Which plan includes SSO?"}]},
             registered_model_name=model_name,
