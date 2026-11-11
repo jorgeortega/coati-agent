@@ -1,6 +1,6 @@
 # Notes: teach-backs
 
-After each phase, Jorge explains the part just built, in his own words. They
+After each phase, the author explains the part just built, in their own words. They
 stay here as they were written: they're interview material, not
 documentation.
 
