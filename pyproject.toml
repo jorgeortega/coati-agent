@@ -28,6 +28,7 @@ build-backend = "hatchling.build"
 [project.scripts]
 coati-index = "coati_agent.index:main"
 coati-plans = "coati_agent.plans:main"
+coati-traffic = "coati_agent.traffic:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/coati_agent"]
@@ -39,6 +40,8 @@ packages = ["src/coati_agent"]
 "data/plans.jsonl" = "coati_agent/data/plans.jsonl"
 "data/rules.txt" = "coati_agent/data/rules.txt"
 "data/site-summary.md" = "coati_agent/data/site-summary.md"
+# The eval questions, for the simulated week (coati-traffic).
+"evals/questions.jsonl" = "coati_agent/data/questions.jsonl"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

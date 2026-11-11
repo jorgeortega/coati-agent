@@ -23,6 +23,9 @@ variables:
   experiment_id:
     description: MLflow experiment the endpoint's traces go to (/Users/<you>/coati-agent).
     default: "795534058228195"
+  traffic_schedule:
+    description: PAUSED or UNPAUSED, the simulated week's hourly schedule (Task 18).
+    default: PAUSED
 
 artifacts:
   wheel:
@@ -92,6 +95,34 @@ resources:
             dependencies:
               - ./dist/*.whl
 
+    simulate_traffic:
+      name: coati-agent simulate_traffic
+      description: The simulated week (Task 18). Asks the served agent one eval question an hour and logs ids, tries, tokens and status (no text) to the artifacts volume.
+      max_concurrent_runs: 1
+      timeout_seconds: 600
+      schedule:
+        # 16 questions a day, 07:00 to 22:00 UTC, with real gaps between them.
+        quartz_cron_expression: "0 0 7-22 * * ?"
+        timezone_id: UTC
+        pause_status: ${var.traffic_schedule}
+      tasks:
+        - task_key: ask
+          environment_key: default
+          python_wheel_task:
+            package_name: coati_agent
+            entry_point: coati-traffic
+            parameters:
+              - --endpoint
+              - ${resources.model_serving_endpoints.agent_endpoint.name}
+              - --volume-dir
+              - /Volumes/${var.catalog}/${resources.schemas.coati_agent.name}/${resources.volumes.artifacts.name}
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ./dist/*.whl
+
   model_serving_endpoints:
     agent_endpoint:
       name: coati-agent
@@ -127,3 +158,6 @@ targets:
       # From scripts/log_model.py's output (prod, 2026-11-10).
       model_version: "1"
       experiment_id: "4447600976848272"
+      # The simulated week runs 2026-11-11 to 2026-11-18 (Task 18); set back
+      # to PAUSED and deploy when it ends.
+      traffic_schedule: UNPAUSED
