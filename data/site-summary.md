@@ -297,6 +297,7 @@ Crumple (MIT license, `npx crumple-mcp demo`): A crumple zone for AI agents. It 
 
 Labs, AI agents we build in the open: https://latitude10.tech/labs
 - The coati agent on Databricks (Databricks · MLflow · Unity Catalog): Our support coati rebuilt as an agent: it searches the docs, reads the plans and checks an API’s readiness, and every answer shows how it got there. https://latitude10.tech/labs/databricks-agent
+- The coati agent on LangGraph (LangGraph.js · Cloudflare Workers · LangSmith): The same coati, the same tools and the same evals, rebuilt as a LangGraph agent on the edge and traced in LangSmith, so the two can be compared side by side. https://latitude10.tech/labs/langchain-agent
 
 - [Latitude 10 Agent Payments Sandbox for Node.js](https://latitude10.tech/products/agent-payments-sandbox): free, MIT. Every way an agent payment can go wrong, on your laptop, for $0. Download: https://latitude10.tech/api/free-kits/agent-payments-sandbox
   Online, nothing to install: agents can open a hosted session with `POST https://sandbox.latitude10.tech/sessions` (a funded sandbox wallet and URLs for every rail, for 24 hours). For people: https://latitude10.tech/sandbox
