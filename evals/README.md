@@ -11,8 +11,11 @@
 Every expected fact was copied from `data/`, the site's export, not written
 from memory.
 
-`python -m coati_agent.evals` runs one target (`--model <endpoint>`, or
-`--target baseline` for today's coati through the site's `/api/support`),
+`python -m coati_agent.evals` runs one target (`--model <endpoint>`,
+`--target baseline` for today's coati through the site's `/api/support`, or
+`--target langgraph --model <name>` for the LangGraph lab's agent,
+[coati-langgraph](https://github.com/jorgeortega/coati-langgraph), under
+`wrangler dev`; its rows are labelled `langgraph-<model>`),
 scores it with MLflow GenAI evaluation, and writes `results/<date>-<label>.json`
 with every row, score and judge rationale. `--table` regenerates
 [RESULTS.md](RESULTS.md).

@@ -211,3 +211,112 @@ def test_results_table_has_a_row_per_run_and_rates_per_check():
     assert "| qwen | 18/24 | 13/16 |" in table
     assert "| baseline-coati | 18/24 | 0/16 |" in table
     assert "5.0 s" in table
+
+
+# --- the LangGraph lab's agent (coati-langgraph), over HTTP ------------------------
+
+LG_CHUNKS = [
+    {
+        "heading": "Keys and tokens › CI keys",
+        "url": "https://docs.latitude10.tech/get-started/keys-and-tokens",
+        "text": "A CI key starts with l10p_.",
+    },
+    {
+        "heading": "Workflow › 3. Add",
+        "url": "https://docs.latitude10.tech/sdks/workflow",
+        "text": "First.",
+    },
+    {
+        "heading": "Workflow › 3. Add",
+        "url": "https://docs.latitude10.tech/sdks/workflow",
+        "text": "Second.",
+    },
+]
+
+
+def test_a_langgraph_answer_becomes_the_output_and_its_searches_the_retrieved_docs():
+    from coati_agent.evals import langgraph_reply
+
+    body = {
+        "answer": "Rotate it on the project page.",
+        "steps": [
+            {"name": "chat", "type": "CHAT_MODEL", "ms": 10},
+            {
+                "name": "search_docs",
+                "type": "TOOL",
+                "ms": 5,
+                "sources": [
+                    {
+                        "title": "Keys and tokens › CI keys",
+                        "url": "https://docs.latitude10.tech/get-started/keys-and-tokens",
+                    },
+                    {
+                        "title": "Workflow › 3. Add",
+                        "url": "https://docs.latitude10.tech/sdks/workflow",
+                    },
+                ],
+            },
+            {"name": "get_plans", "type": "TOOL", "ms": 1, "sources": []},
+        ],
+        "usage": {"input_tokens": 3000, "output_tokens": 40},
+        "model": "gpt-oss-120b",
+    }
+    reply = langgraph_reply(body, LG_CHUNKS)
+
+    assert reply["output"] == "Rotate it on the project page."
+    assert reply["tools"] == ["search_docs", "get_plans"]
+    [search] = reply["searches"]
+    assert [d["metadata"]["doc_uri"] for d in search] == [
+        "https://docs.latitude10.tech/get-started/keys-and-tokens",
+        "https://docs.latitude10.tech/sdks/workflow",
+    ]
+    assert search[0]["page_content"] == "A CI key starts with l10p_."
+    # One heading on one page names two chunks: both count.
+    assert search[1]["page_content"] == "First.\n\nSecond."
+    assert reply["usage"] == {"input_tokens": 3000, "output_tokens": 40}
+
+
+def test_a_pending_langgraph_call_is_scored_like_the_local_agents():
+    from coati_agent.evals import langgraph_reply
+
+    url = "https://petstore3.swagger.io/api/v3/openapi.json"
+    body = {
+        "pending": {"id": "c1", "name": "check_readiness", "args": {"url": url}},
+        "messages": [],
+        "steps": [],
+        "usage": {},
+    }
+    out = langgraph_reply(body, LG_CHUNKS)["output"]
+
+    assert out.startswith("CALL check_readiness ")
+    assert tool_ok(out, {"category": "tool", "expected_url": url})
+
+
+def test_the_langgraph_target_refuses_a_different_model_than_its_label():
+    import httpx
+    import pytest
+
+    from coati_agent.evals import Recorder, langgraph_target
+
+    reply = {
+        "answer": "Hi.",
+        "steps": [],
+        "usage": {"input_tokens": 1, "output_tokens": 1},
+        "model": "qwen3-30b-a3b",
+    }
+    client = httpx.Client(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, json=reply))
+    )
+    recorder = Recorder()
+
+    predict = langgraph_target(
+        "http://x/invoke", "qwen3-30b-a3b", recorder, LG_CHUNKS, client=client
+    )
+    assert predict("Hi?") == "Hi."
+    assert recorder.rows["Hi?"]["input_tokens"] == 1
+
+    wrong = langgraph_target(
+        "http://x/invoke", "gpt-oss-120b", Recorder(), LG_CHUNKS, client=client
+    )
+    with pytest.raises(RuntimeError, match="qwen3-30b-a3b"):
+        wrong("Hi?")

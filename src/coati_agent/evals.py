@@ -3,6 +3,8 @@
     DATABRICKS_CONFIG_PROFILE=coati-free uv run python -m coati_agent.evals \
         --model databricks-gpt-oss-120b
     DATABRICKS_CONFIG_PROFILE=coati-free uv run python -m coati_agent.evals --target baseline
+    DATABRICKS_CONFIG_PROFILE=coati-free uv run python -m coati_agent.evals \
+        --target langgraph --model gpt-oss-120b   # coati-langgraph under wrangler dev
 
 Each run writes evals/results/<date>-<label>.json. The judge is Databricks'
 managed judge, which is none of the models being compared. Cases are scored
@@ -294,6 +296,95 @@ def baseline_target(
     return predict
 
 
+def langgraph_reply(body: dict[str, Any], chunks: list[dict[str, Any]]) -> dict[str, Any]:
+    """An /invoke answer from coati-langgraph as the runner needs it.
+
+    The output is what the local target gives: the answer, or `CALL name args`
+    for a pending client tool. Each search_docs step becomes a retrieval with
+    the chunks it returned, found by heading and page in the agent's own index
+    (its chunks are this repo's, character for character); a heading that
+    names two chunks on one page gives both.
+    """
+    pending = body.get("pending")
+    if isinstance(pending, dict):
+        call = ToolCall(
+            str(pending.get("id", "")),
+            str(pending.get("name", "")),
+            json.dumps(pending.get("args", {})),
+        )
+        output = as_output(None, call)
+    else:
+        output = as_output(body.get("answer"), None)
+
+    texts: dict[tuple[str, str], list[str]] = {}
+    for chunk in chunks:
+        texts.setdefault((chunk["heading"], chunk["url"]), []).append(chunk["text"])
+
+    searches, tools = [], []
+    for step in body.get("steps") or []:
+        if step.get("type") != "TOOL":
+            continue
+        tools.append(step.get("name"))
+        if step.get("name") == "search_docs":
+            searches.append(
+                [
+                    {
+                        "page_content": "\n\n".join(texts.get((src["title"], src["url"]), [])),
+                        "metadata": {"doc_uri": src["url"], "title": src["title"]},
+                    }
+                    for src in step.get("sources") or []
+                ]
+            )
+    usage = body.get("usage") or {}
+    return {
+        "output": output,
+        "searches": searches,
+        "tools": tools,
+        "usage": {k: int(usage.get(k, 0)) for k in ("input_tokens", "output_tokens")},
+    }
+
+
+def langgraph_target(
+    url: str,
+    model: str,
+    recorder: Recorder,
+    chunks: list[dict[str, Any]],
+    client: Any = None,
+):
+    """The LangGraph lab's agent: coati-langgraph's POST /invoke, under
+    `wrangler dev` (COATI_MODEL set there). It goes to the agent, not the
+    site's gateway, like the local target: a pending check_readiness is
+    scored as the call it is. Its searches and tool calls become spans, so
+    the same scorers read them."""
+    import httpx
+    import mlflow
+    from mlflow.entities import SpanType
+
+    http = client or httpx.Client(timeout=120)
+
+    @mlflow.trace(span_type=SpanType.AGENT, name="eval_turn")
+    def predict(question: str) -> str:
+        started = time.perf_counter()
+        response = http.post(url, json={"messages": [{"role": "user", "content": question}]})
+        ms = round((time.perf_counter() - started) * 1000)
+        response.raise_for_status()
+        body = response.json()
+        if body.get("model") != model:
+            raise RuntimeError(f"the agent runs {body.get('model')!r}, not {model!r}: restart it")
+        reply = langgraph_reply(body, chunks)
+        for docs in reply["searches"]:
+            with mlflow.start_span(name="search_docs", span_type=SpanType.RETRIEVER) as span:
+                span.set_outputs(docs)
+        for name in reply["tools"]:
+            if name != "search_docs":
+                with mlflow.start_span(name=name, span_type=SpanType.TOOL):
+                    pass
+        recorder.add(question, ms=ms, **reply["usage"])
+        return reply["output"]
+
+    return predict
+
+
 # --- the run ----------------------------------------------------------------------
 
 
@@ -439,9 +530,16 @@ def write_results_md() -> Path:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Run the eval set against one target.")
-    parser.add_argument("--target", choices=["local", "baseline"], default="local")
+    parser.add_argument("--target", choices=["local", "baseline", "langgraph"], default="local")
     parser.add_argument("--model", default="databricks-gpt-oss-120b")
     parser.add_argument("--baseline-url", default="http://localhost:3000/api/support")
+    parser.add_argument("--langgraph-url", default="http://localhost:8799/invoke")
+    parser.add_argument(
+        "--langgraph-index",
+        type=Path,
+        default=ROOT.parent / "coati-langgraph" / "src" / "index.json",
+        help="coati-langgraph's index, for the text of the chunks it searched",
+    )
     parser.add_argument("--judge", default="databricks")
     parser.add_argument("--limit", type=int, default=None, help="Only the first N cases (pilot)")
     parser.add_argument("--only", default=None, help="Comma-separated case ids")
@@ -472,6 +570,10 @@ def main(argv: list[str] | None = None) -> None:
     recorder = Recorder()
     if args.target == "baseline":
         predict, label = baseline_target(args.baseline_url, recorder), "baseline-coati"
+    elif args.target == "langgraph":
+        chunks = json.loads(args.langgraph_index.read_text(encoding="utf-8"))["chunks"]
+        predict = langgraph_target(args.langgraph_url, args.model, recorder, chunks)
+        label = f"langgraph-{args.model}"
     else:
         predict, label = (
             local_target(args.model, recorder, warehouse_id=args.warehouse_id),
