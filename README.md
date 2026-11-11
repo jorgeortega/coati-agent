@@ -2,21 +2,66 @@
 
 The support agent of [Latitude 10](https://latitude10.tech), rebuilt on
 Databricks as a small, readable harness: a tool-calling loop, retrieval over
-the docs, MLflow tracing, an eval set, and a serving endpoint. It powers the
-Agent Lab page, where you can talk to it and watch each turn's trace.
+the docs, MLflow tracing, an eval set and a serving endpoint.
 
-Status: built and served; the page goes public once a measured month fits
-the budget. The plan lives in the Latitude 10 repo
-(`docs/superpowers/specs/2026-11-09-databricks-agent.md`).
+- **Try it:** [latitude10.tech/labs/databricks-agent](https://latitude10.tech/labs/databricks-agent).
+  Ask about the platform, the plans or the docs, or give it the URL of an
+  OpenAPI document to score. Each answer shows its sources and how it got there.
+- **See how it works, in pictures:** [How the Agent Lab Works](https://claude.ai/artifact/BRioQZS1C2XbXrErPkHqSc)
+
+## How it works
+
+```mermaid
+flowchart LR
+  P[The page<br/>latitude10.tech] --> G[Gateway<br/>Cloudflare Worker]
+  G --> A[Agent loop<br/>Databricks Model Serving]
+  A --> M[Qwen3.5 122B<br/>Foundation Model API]
+  A --> S[search_docs<br/>index shipped in the model]
+  A --> L[get_plans<br/>plans shipped in the model]
+  A -. hands back .-> G
+  G -. runs .-> R[check_readiness<br/>the site's own rules]
+```
+
+1. **The page** sends the question to a **gateway** on the site. The gateway
+   validates it, throttles each visitor, and later scrubs the trace down to
+   step names, times, tokens and links before the browser sees it.
+2. **The agent** is a plain loop in `src/coati_agent/agent.py`: ask the model,
+   run the tools it asks for, repeat, answer. It stops after four model calls.
+3. **Three tools, placed where their code and data live.** `search_docs` and
+   `get_plans` run inside the agent. `check_readiness` is handed back to the
+   gateway, which runs the site's readiness rules and resumes the turn.
+4. **Every turn is traced** in MLflow, and a daily job deletes traces after 30
+   days. No tool writes anything, so a prompt injection can at worst produce a
+   wrong answer.
+
+## Results
+
+The same 40 questions went to this agent and to the support chat it replaces
+(Claude Haiku 5.5, no tools), scored by Databricks' managed judge. Details in
+[`evals/RESULTS.md`](evals/RESULTS.md) and [`evals/README.md`](evals/README.md).
+
+| | This agent | The old chat |
+|---|---|---|
+| Facts answered right | 18/24 | 6/24 |
+| Facts only the docs have | 12/16 | 1/16 |
+| Refused, said "don't know" or ignored an injection | 13/13 | 13/13 |
+| Ran the readiness check when given a spec | 3/3 | 0/3 |
+| Median time to answer | 3.4 s | 1.3 s |
+
+It's slower because it searches before it answers. The evals also chose the
+model: Qwen3.5 122B against GPT OSS 120B and Llama 3.3 70B.
 
 ## Why it's built this way
 
 - **No framework.** The loop is a few dozen lines, so you can read the whole
   thing.
-- **No Vector Search.** A Vector Search endpoint can't scale to zero (one unit
-  minimum, about $200 a month). The docs are under a hundred chunks, so the
-  index ships inside the agent and search is a cosine scan in memory.
+- **No Vector Search.** The docs are under a hundred chunks, so the index
+  ships inside the agent and search is a cosine scan in memory. An endpoint
+  that can't scale to zero would sit idle most of the day.
 - **The model is a setting.** The eval set picks it, not taste.
+- **Tool descriptions are routing rules.** When `get_plans` claimed "any
+  question about a plan", docs questions went to it; narrowing its words fixed
+  that without a code change.
 
 ## Develop
 
@@ -36,8 +81,8 @@ Two targets in `databricks.yml`, each tied to a CLI profile by name:
 
 | Target | Profile | Workspace | `get_plans` |
 |---|---|---|---|
-| `dev` | `coati-free` | Free Edition, for building and evals (non-commercial use only) | the Unity Catalog function on a SQL warehouse |
-| `prod` | `coati-paid` | pay-as-you-go, for the public page | the `plans.jsonl` shipped in the model |
+| `dev` | `coati-free` | Free Edition, for building and evals | the Unity Catalog function on a SQL warehouse |
+| `prod` | `coati-paid` | the workspace behind the public page | the `plans.jsonl` shipped in the model |
 
 Log in under those profile names, or change `workspace.profile` in your copy.
 `data/` already holds the site's export (rules, summary, docs, plans, with a
@@ -50,7 +95,7 @@ registered model and the model needs the schema and the index:
 # 1. Schema, volume and jobs. The endpoint fails here until a model exists.
 databricks bundle deploy -t dev
 
-# 2. The docs index in the artifacts volume (a few cents of embedding calls).
+# 2. The docs index in the artifacts volume.
 databricks bundle run -t dev embed_docs
 
 # 3. dev only: the plans table and get_plans function, on a SQL warehouse
