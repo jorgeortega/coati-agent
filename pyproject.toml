@@ -29,6 +29,7 @@ build-backend = "hatchling.build"
 coati-index = "coati_agent.index:main"
 coati-plans = "coati_agent.plans:main"
 coati-traffic = "coati_agent.traffic:main"
+coati-prune = "coati_agent.prune:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/coati_agent"]

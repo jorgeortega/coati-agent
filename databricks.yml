@@ -123,6 +123,31 @@ resources:
             dependencies:
               - ./dist/*.whl
 
+    prune_traces:
+      name: coati-agent prune_traces
+      description: Deletes the served agent's MLflow traces older than 30 days, as Latitude 10's privacy policy says.
+      max_concurrent_runs: 1
+      timeout_seconds: 1800
+      schedule:
+        quartz_cron_expression: "0 0 3 * * ?"
+        timezone_id: UTC
+        pause_status: UNPAUSED
+      tasks:
+        - task_key: prune
+          environment_key: default
+          python_wheel_task:
+            package_name: coati_agent
+            entry_point: coati-prune
+            parameters:
+              - --experiment-id
+              - ${var.experiment_id}
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ./dist/*.whl
+
   model_serving_endpoints:
     agent_endpoint:
       name: coati-agent
