@@ -183,6 +183,6 @@ targets:
       # From scripts/log_model.py's output (prod, 2026-11-10).
       model_version: "1"
       experiment_id: "4447600976848272"
-      # The simulated week runs 2026-11-11 to 2026-11-18 (Task 18); set back
-      # to PAUSED and deploy when it ends.
-      traffic_schedule: UNPAUSED
+      # The simulated week ran on 2026-11-11 and was stopped early by the
+      # owner the same day (Task 18).
+      traffic_schedule: PAUSED

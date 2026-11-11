@@ -295,6 +295,9 @@ Everything free in one place, with the free tools, guides and open source: https
 
 Crumple (MIT license, `npx crumple-mcp demo`): A crumple zone for AI agents. It sits between agents and your API, so that when something fails, the damage stops there. Every claim it makes is a check you can run. https://latitude10.tech/crumple
 
+Labs, AI agents we build in the open: https://latitude10.tech/labs
+- The coati agent on Databricks (Databricks · MLflow · Unity Catalog): Our support coati rebuilt as an agent: it searches the docs, reads the plans and checks an API’s readiness, and every answer shows how it got there. https://latitude10.tech/labs/databricks-agent
+
 - [Latitude 10 Agent Payments Sandbox for Node.js](https://latitude10.tech/products/agent-payments-sandbox): free, MIT. Every way an agent payment can go wrong, on your laptop, for $0. Download: https://latitude10.tech/api/free-kits/agent-payments-sandbox
   Online, nothing to install: agents can open a hosted session with `POST https://sandbox.latitude10.tech/sessions` (a funded sandbox wallet and URLs for every rail, for 24 hours). For people: https://latitude10.tech/sandbox
 - [Meridian design pack](https://latitude10.tech/products/design-pack-meridian): free, MIT. SaaS products people use all day: admin consoles, CRMs, internal tools. Download: https://latitude10.tech/api/design-packs/meridian
