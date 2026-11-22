@@ -1,6 +1,6 @@
 # Latitude 10
 
-> Latitude 10 makes APIs work with AI agents: it scores your OpenAPI document, fixes what stops agents, and serves it as a hosted MCP server behind keys or your own sign-in. A registry, reference, docs and SDKs are included. It’s built by Jorge Ortega at October Moon LLC.
+> Latitude 10 is a software consulting studio. Send us a brief and we build it, by the hour, the day or the month: background coding agents do the work in parallel, and a senior engineer reviews every change. We also build and run EarningsLens, an API platform for AI agents, agent kits and the Coati iPhone app.
 
 ## About
 
@@ -9,7 +9,39 @@
 - Company page: https://latitude10.tech/company
 - Website: https://latitude10.tech (not related to other companies or products named Latitude)
 
+## Hire us
+
+Latitude 10 builds software for clients. Send a brief at https://latitude10.tech/start (six short steps, files, and an NDA request if you want one); you get a private link to follow it.
+
+- By the hour: $60 an hour. A fix, a review, an integration or a second pair of eyes on your code.
+- By the day: $480 a day. A feature, a prototype or a focused sprint that needs whole days.
+- By the month: $9,600 a month. A product built over months, with us as your development team.
+
+Prices are in US dollars. Pricing: https://latitude10.tech/pricing
+
+How a project works:
+
+1. Brief: Six short steps at /start. Attach designs and specs, and ask for an NDA first if you need one.
+2. Scope: We read every brief ourselves, ask what’s missing, and send a proposal with the scope, the rate and the dates.
+3. Sign: An NDA, a master services agreement and a statement of work, signed online with a code sent to your email.
+4. Build: Background agents work on the tasks in parallel, each in its own sandbox. A senior engineer reviews every change.
+5. Deliver: Every change reaches you as a pull request in your repository, and each invoice comes with a summary of the work and the time.
+
+We build with Open-Inspect (https://github.com/open-inspect/background-agents), an open-source system of background coding agents, and a senior engineer reviews every change.
+
+Agents can send a brief for their user (after showing it to them and getting their yes): the MCP tool `request_project` on https://latitude10.tech/mcp, or `POST https://latitude10.tech/api/requests` with the brief as JSON (the fields of the form at /start: name, email, requesterKind, country, objective, projectType, deadlineKind, consent: true, and any others). Files go through the form.
+
+## What we built (proof of what we can build)
+
+- [EarningsLens](https://earningslens.latitude10.tech): Any US company’s latest earnings release, read in plain words, with every figure shown where the release printed it. It shows: A data product over messy documents: a model reads each release into checked figures, graded against the company’s own XBRL, served as an app and a public API.
+- [The API platform](https://latitude10.tech/platform): One OpenAPI document becomes an API reference, docs, SDKs, an API client and a hosted MCP server for AI agents. It shows: A multi-tenant SaaS: workspaces, single sign-on, roles, an audit log, Stripe billing and hosted MCP servers on Cloudflare.
+- [Agent kits](https://latitude10.tech/platform/mcp/self-host): Agentify and the agent kits for 7 stacks: Node.js, Python, .NET, Java, Ruby, PHP, Scala. It shows: Production libraries in several languages, each released with its tests and a live demo API.
+- [Coati](https://latitude10.tech/coati): The control room for the MCP servers and APIs your AI agents call. Connect in seconds, see what an agent sees, and know the moment it breaks. It shows: An iPhone app on the App Store, with a subscription and its own server.
+- [Open source](https://github.com/jorgeortega/openapi-agent-check): openapi-agent-check and openapi-agentify, published on npm under the MIT license. It shows: Developer tools other people install: a command-line checker and a middleware library, documented and versioned.
+
 ## Platform
+
+Latitude 10 makes APIs work with AI agents: it scores your OpenAPI document, fixes what stops agents, and serves it as a hosted MCP server behind keys or your own sign-in. A registry, reference, docs and SDKs are included. It’s built by Jorge Ortega at October Moon LLC.
 
 One OpenAPI spec as the source of truth, and the API reference, docs, SDKs, API client and MCP server made from it. What works today is marked available; the rest is planned and can't be used or bought yet.
 
@@ -22,7 +54,7 @@ One OpenAPI spec as the source of truth, and the API reference, docs, SDKs, API 
 
 ## Plans
 
-A plan gets a price the day everything it launches with works; no money is taken for a planned plan. See https://latitude10.tech/pricing
+A plan gets a price the day everything it launches with works; no money is taken for a planned plan. See https://latitude10.tech/platform/pricing
 
 - Free (Individual developers and small projects): $0.
   Agent readiness check for any OpenAPI spec, in your browser (available); The readiness check as an MCP server (available); openapi-agent-check, the open-source CLI (MIT) (available); Agent Payments Sandbox (available); Guide to publishing your MCP server (available); A hosted project for one API (available); Registry: every version of your OpenAPI spec, scored and validated (available); Breaking-change diff between versions (available); Readiness gate in your CI before tools are generated (available); Hosted, interactive API reference (available); Embeddable API reference for your own site (available); Hosted MCP server made from your spec (available); API client and playground in the browser (available); Hosted docs and guides, synced from Git (available); llms.txt, llms-full.txt and Markdown for every page (available); A docs MCP server for every site (available).
@@ -53,31 +85,43 @@ Book the readiness assessment: https://latitude10.tech/contact or jorge@latitude
 
 ### What is Latitude 10?
 
-Latitude 10 makes APIs work with AI agents: it scores your OpenAPI document, fixes what stops agents, and serves it as a hosted MCP server behind keys or your own sign-in. A registry, reference, docs and SDKs are included. It’s built by Jorge Ortega at October Moon LLC. All of it works today, and Agentify’s self-hosted kits do the same inside your own app.
+Latitude 10 is a software consulting studio. Send us a brief and we build it, by the hour, the day or the month: background coding agents do the work in parallel, and a senior engineer reviews every change. We also build and run EarningsLens, an API platform for AI agents, agent kits and the Coati iPhone app.
 
-### What can I use today?
+### Who does the work?
 
-The agent readiness check, free in your browser, as an MCP server and as the open-source openapi-agent-check CLI, which also writes the fixes; a free workspace with a hosted MCP server that turns your spec into tools for AI agents, with a stored credential and keys you hand out; the registry (every version of your spec, scored, with breaking changes flagged); a hosted, embeddable API reference with an API client; hosted docs in Markdown with llms.txt and their own MCP server; and Agentify’s self-hosted edition: kits that turn your OpenAPI spec into an MCP server for Node.js, Python, .NET, Java, Ruby, PHP and Scala.
+Jorge Ortega, a senior software engineer with 18 years of experience building SaaS in Costa Rica, the United States and Germany, with background coding agents. He scopes every project, reviews every change and is your contact from the brief to delivery.
 
 ### What does it cost?
 
-Free costs $0. Pro costs $150 a month, or $125 a month, billed annually, and Business $600 a month, or $500 a month, billed annually, each after a 14-day free trial. Enterprise is quoted for you, with SSO, the audit log and an SLA. The Agentify kits cost from $19, paid once, and services start at $500.
+$60 an hour, $480 a day, $9,600 a month, in US dollars. Fixed-price services start at $500. The statement of work for each project sets the rate, the scope and the dates before any work starts.
 
-### What does the readiness check look at?
+### What can you build?
 
-It scores an OpenAPI spec from 0 to 100 for how well AI agents can use it: operation ids, summaries and descriptions, examples, schemas, errors, pagination, auth, idempotent writes and the number of tools. Then it says what to fix first. Its rules are open source (MIT).
+Web apps, APIs, AI agents and MCP servers, data products and iPhone apps: our own products show each kind. We work in Node.js, Python, .NET, Java, Ruby, PHP and Scala, among others, or in the stack you already use.
 
-### What is an MCP server?
+### How do you use AI agents?
 
-A server that speaks the Model Context Protocol (MCP), the open standard AI applications such as Claude use to find and call tools. Each API operation you choose becomes a tool an agent can call, behind OAuth, per-tool scopes, rate limits and an audit log.
+We build with Open-Inspect, an open-source system of background coding agents. Agents work on independent tasks in parallel, each in its own sandbox, and nothing reaches you until a senior engineer has reviewed it as a pull request.
+
+### Do you sign an NDA?
+
+Yes. Ask for one in your brief and we send our mutual NDA to sign online before you share anything confidential.
 
 ### Who owns the code?
 
 You do, once the work is paid in full. It runs on your infrastructure, in your repository. The kit code inside it stays ours and is licensed to you, for good, for that project.
 
+### How do I start?
+
+Send a brief at latitude10.tech/start: six short steps, your files, and an NDA request if you want one. You get a private link to follow it, and we reply by email.
+
 ### What services does Latitude 10 offer?
 
 API readiness assessment ($500), OpenAPI modernisation sprint (from $2,500), MCP implementation (from $2,500), SDK generation and CI (from $2,000), Developer portal (from $5,000), and for Enterprise, directory listing (custom, from $11,000) and migration and architecture (custom, from $10,000). Each is a fixed price for an agreed scope, on your infrastructure.
+
+### What is an MCP server?
+
+A server that speaks the Model Context Protocol (MCP), the open standard AI applications such as Claude use to find and call tools. Each API operation you choose becomes a tool an agent can call, behind OAuth, per-tool scopes, rate limits and an audit log.
 
 ### What happened to the Agent Listing Sprint?
 
@@ -130,7 +174,7 @@ The kits can be bought by AI agents directly, with USDC over the x402 protocol (
 2. Pay and retry the same URL: x402 v1 with `X-PAYMENT`, x402 v2 with `PAYMENT-SIGNATURE` (any x402 client, e.g. `@x402/fetch`), or L402 with `Authorization: L402 <macaroon>:<preimage>`.
 3. The paid response contains the product: a personal, expiring download link.
 
-Agents that speak MCP can do the same through the MCP server at https://latitude10.tech/mcp (Streamable HTTP; tools: `list_products`, `get_product`, `buy_product`, `check_agent_readiness`). `buy_product` without a payment returns the x402 v2 requirements; an x402 MCP client (e.g. `@x402/mcp`) pays and retries automatically.
+Agents that speak MCP can do the same through the MCP server at https://latitude10.tech/mcp (Streamable HTTP; tools: `list_products`, `get_product`, `buy_product`, `check_agent_readiness`, `request_project`). `buy_product` without a payment returns the x402 v2 requirements; an x402 MCP client (e.g. `@x402/mcp`) pays and retries automatically.
 
 A step-by-step guide with diagrams, for people and agents: https://latitude10.tech/products/agent-payments
 
@@ -320,7 +364,8 @@ Labs, AI agents we build in the open: https://latitude10.tech/labs
 - [Enterprise, for people](https://latitude10.tech/enterprise)
 - [Security and data, for people](https://latitude10.tech/security)
 - [Services, for people](https://latitude10.tech/services)
-- [Plans and pricing, for people](https://latitude10.tech/pricing)
+- [Pricing for development work, for people](https://latitude10.tech/pricing)
+- [The platform's plans, for people](https://latitude10.tech/platform/pricing)
 - [OpenAPI for the paid endpoints, with prices](https://latitude10.tech/openapi.json)
 - [x402 manifest](https://latitude10.tech/.well-known/x402)
 - [MCP server](https://latitude10.tech/mcp)
