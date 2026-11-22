@@ -1,6 +1,6 @@
 {"id": "s01", "question": "What does the Pro plan cost?", "expectations": {"category": "summary", "expected_facts": ["Pro costs $150 a month", "or $125 a month, billed annually", "after a 14-day free trial"]}}
 {"id": "s02", "question": "Which plans include SSO?", "expectations": {"category": "summary", "expected_facts": ["SSO is in the Business plan", "SSO is in the Enterprise plan", "SSO uses OIDC (OpenID Connect)"]}}
-{"id": "s03", "question": "How much is the API readiness assessment, and how long does it take?", "expectations": {"category": "summary", "expected_facts": ["It costs $500", "It takes 2 working days"]}}
+{"id": "s03", "question": "How much does Latitude 10 charge by the day, and do its rates include taxes?", "expectations": {"category": "summary", "expected_facts": ["It costs $480 a day", "The rates exclude taxes"]}}
 {"id": "s04", "question": "Who is behind Latitude 10?", "expectations": {"category": "summary", "expected_facts": ["It is built by Jorge Ortega", "The company is October Moon LLC"]}}
 {"id": "s05", "question": "Which languages do the self-hosted Agentify kits support?", "expectations": {"category": "summary", "expected_facts": ["Node.js", "Python", ".NET", "Java", "Ruby", "PHP", "Scala"]}}
 {"id": "s06", "question": "What does the readiness check look at?", "expectations": {"category": "summary", "expected_facts": ["It scores an OpenAPI spec from 0 to 100 for how well AI agents can use it", "It says what to fix first", "Its rules are open source (MIT)"]}}

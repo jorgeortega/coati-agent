@@ -17,7 +17,7 @@ Latitude 10 builds software for clients. Send a brief at https://latitude10.tech
 - By the day: $480 a day. A feature, a prototype or a focused sprint that needs whole days.
 - By the month: $9,600 a month. A product built over months, with us as your development team.
 
-Prices are in US dollars. Pricing: https://latitude10.tech/pricing
+Prices are in US dollars, excluding taxes. Hourly work has a one-hour minimum and is billed in whole hours. The monthly rate is a full-time month of about 20 working days. Pricing: https://latitude10.tech/pricing
 
 How a project works:
 
@@ -65,22 +65,6 @@ A plan gets a price the day everything it launches with works; no money is taken
 - Enterprise (Regulated businesses and complex API estates): Custom.
   SSO (OIDC) and role-based access (available); Audit log (available); SLA and dedicated support (available).
 
-## Services
-
-For API companies that want it done for them. Launch prices in US dollars, excluding taxes where they apply; booked by people, not over x402. Support and maintenance are quoted with each service. What's included: https://latitude10.tech/services
-
-- API readiness assessment: $500, 2 working days. One OpenAPI spec reviewed for developers and AI agents, with the gaps found and the fixes in order of value. https://latitude10.tech/services#readiness-assessment
-- OpenAPI modernisation sprint: from $2,500. Your API contract brought up to date: complete, validated and documented, so docs, SDKs and agent tools can be made from it. https://latitude10.tech/services#openapi-modernisation
-- MCP implementation: from $2,500. One API connected to an MCP server with Agentify, with auth configured and the key workflows tested with a real agent. https://latitude10.tech/services#mcp-implementation
-- SDK generation and CI: from $2,000. A typed SDK for one language, generated from your spec, with validation and publishing automated in your CI. https://latitude10.tech/services#sdk-ci
-- Developer portal: from $5,000. Your docs, API reference and guides set up, deployed and versioned, for developers and for agents. https://latitude10.tech/services#developer-portal
-- Directory listing (Enterprise): custom, from $11,000, about 3 to 4 weeks. A production MCP server for your API, tested through AWS AgentCore Gateway and Claude, and submitted to the marketplaces and directories where agents look. https://latitude10.tech/services#directory-listing
-- Migration and architecture (Enterprise): custom, from $10,000. A migration of your API docs, SDKs or agent tooling, scoped with security, governance and production deployment in mind. https://latitude10.tech/services#migration-architecture
-
-The Agent Listing Sprint is now the Enterprise directory listing service. To publish an MCP server yourself, the free guide explains what each directory asks for (the MCP Registry, Glama, Smithery, the HOL Registry, the Claude connectors directory, the enterprise marketplaces and the x402 directories): https://latitude10.tech/publishing-your-mcp-server
-
-Book the readiness assessment: https://latitude10.tech/contact or jorge@latitude10.tech
-
 ## Questions
 
 ### What is Latitude 10?
@@ -93,7 +77,7 @@ Jorge Ortega, a senior software engineer with 18 years of experience building Sa
 
 ### What does it cost?
 
-$60 an hour, $480 a day, $9,600 a month, in US dollars. Fixed-price services start at $500. The statement of work for each project sets the rate, the scope and the dates before any work starts.
+$60 an hour, $480 a day, $9,600 a month. Prices are in US dollars, excluding taxes. Hourly work has a one-hour minimum and is billed in whole hours. The monthly rate is a full-time month of about 20 working days. The statement of work for each project sets the rate, the scope and the dates before any work starts.
 
 ### What can you build?
 
@@ -114,54 +98,6 @@ You do, once the work is paid in full. It runs on your infrastructure, in your r
 ### How do I start?
 
 Send a brief at latitude10.tech/start: six short steps, your files, and an NDA request if you want one. You get a private link to follow it, and we reply by email.
-
-### What services does Latitude 10 offer?
-
-API readiness assessment ($500), OpenAPI modernisation sprint (from $2,500), MCP implementation (from $2,500), SDK generation and CI (from $2,000), Developer portal (from $5,000), and for Enterprise, directory listing (custom, from $11,000) and migration and architecture (custom, from $10,000). Each is a fixed price for an agreed scope, on your infrastructure.
-
-### What is an MCP server?
-
-A server that speaks the Model Context Protocol (MCP), the open standard AI applications such as Claude use to find and call tools. Each API operation you choose becomes a tool an agent can call, behind OAuth, per-tool scopes, rate limits and an audit log.
-
-### What happened to the Agent Listing Sprint?
-
-It’s now the Enterprise directory listing service, quoted for your API from $11,000: a production MCP server, tested through AWS AgentCore Gateway and Claude, and submitted to the marketplaces and directories where agents look.
-
-### What do we sign?
-
-A short Master Services Agreement, and a Statement of Work for each engagement. They set the scope, the price, the 30-day warranty, a liability cap and who owns what. You get both with the quote, and nothing starts until both sides have signed. If we’ll see personal data, we also sign a data processing agreement.
-
-### What access do you need?
-
-Your staging environment and the least access the work needs, shared through a secure channel. We can sign an NDA before you send anything confidential.
-
-### Which stacks do you work with?
-
-Any API with an OpenAPI spec, or docs we can write one from. MCP servers are built with Agentify, in Node.js, Python, .NET, Java, Ruby, PHP or Scala, next to your API or inside it.
-
-### Where does it run?
-
-On your AWS, Cloudflare or Fly.io account, or your own servers. Latitude 10 hosts nothing and never sits between your customers and your API.
-
-### Do you guarantee the listings are approved?
-
-No. Each platform decides. With directory listing, what’s guaranteed is that every listing in scope is submitted with a server that passes its tests, and that reviewer feedback is fixed within the 30 days after go-live.
-
-### Can agents pay per call?
-
-Yes, as part of directory listing if you want it: MPP through your Stripe account and x402 through Coinbase. The money goes straight to you. Latitude 10 never holds or moves it.
-
-### Can we publish an MCP server ourselves?
-
-Yes. Our free guide explains what each directory asks for and what tends to go wrong: https://latitude10.tech/publishing-your-mcp-server. Directory listing is for teams that want the server built, tested and submitted for them.
-
-### How do we start?
-
-With the api readiness assessment: 2 working days, $500, credited in full against a service booked within 30 days.
-
-### Why are the prices this low?
-
-They’re launch prices for the first clients. Latitude 10 is new to this work; the kits do the groundwork, so the work takes weeks, not months.
 
 ## How agents buy
 
@@ -363,7 +299,6 @@ Labs, AI agents we build in the open: https://latitude10.tech/labs
 - [Developer docs, for people](https://docs.latitude10.tech)
 - [Enterprise, for people](https://latitude10.tech/enterprise)
 - [Security and data, for people](https://latitude10.tech/security)
-- [Services, for people](https://latitude10.tech/services)
 - [Pricing for development work, for people](https://latitude10.tech/pricing)
 - [The platform's plans, for people](https://latitude10.tech/platform/pricing)
 - [OpenAPI for the paid endpoints, with prices](https://latitude10.tech/openapi.json)

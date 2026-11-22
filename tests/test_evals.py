@@ -112,7 +112,9 @@ def test_docs_links_must_use_the_docs_host():
 
 def test_known_prices_come_from_the_export():
     prices = known_prices()
-    assert {"150", "125", "600", "500", "19", "2500", "11000"} <= prices
+    # The studio's rates since 2026-11-22; the fixed-price services left the site that day.
+    assert {"150", "125", "600", "500", "19", "60", "480", "9600"} <= prices
+    assert not {"2500", "11000"} & prices
 
 
 def test_prices_must_be_ones_the_site_publishes():
